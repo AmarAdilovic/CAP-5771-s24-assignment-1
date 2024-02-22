@@ -69,6 +69,7 @@ class Section1:
     def partA(self):
         # Return 0 (ran ok) or -1 (did not run ok)
         answer = u.starter_code()
+        print("Part A Answer:", answer)
         return answer
 
     # ----------------------------------------------------------------------
@@ -91,17 +92,22 @@ class Section1:
         Xtest, ytest = u.filter_out_7_9s(Xtest, ytest)
         Xtrain = nu.scale_data(Xtrain)
         Xtest = nu.scale_data(Xtest)
+        # According to filter_out_7_9s, y is the labels
+        # Also check that the labels are integers
+        ytrain = nu.enforce_matrix_type(ytrain, np.int32, int)
+        ytest = nu.enforce_matrix_type(ytest, np.int32, int)
 
         answer = {}
 
         # Enter your code and fill the `answer` dictionary
 
-        answer["length_Xtrain"] = None  # Number of samples
-        answer["length_Xtest"] = None
-        answer["length_ytrain"] = None
-        answer["length_ytest"] = None
-        answer["max_Xtrain"] = None
-        answer["max_Xtest"] = None
+        answer["length_Xtrain"] = len(Xtrain)  # Number of samples
+        answer["length_Xtest"] = len(Xtest)
+        answer["length_ytrain"] = len(ytrain)
+        answer["length_ytest"] = len(ytest)
+        answer["max_Xtrain"] = np.max(Xtrain)
+        answer["max_Xtest"] = np.max(Xtest)
+        print("Part B Answer:", answer)
         return answer, Xtrain, ytrain, Xtest, ytest
 
     """

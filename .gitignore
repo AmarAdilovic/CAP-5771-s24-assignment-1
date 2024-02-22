@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+mnist_X.npy
+mnist_y.npy
+
 # C extensions
 *.so
 
