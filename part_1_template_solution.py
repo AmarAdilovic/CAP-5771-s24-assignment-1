@@ -201,9 +201,7 @@ class Section1:
         # Therefore, `answer[k]` is a dictionary with keys: 'scores', 'cv', 'clf`
 
         answer = {}
-        LIST_OF_K = [2, 5, 8, 16]
-        EASY_K = [1, 2]
-        for k in LIST_OF_K:
+        for k in [2, 5, 8, 16]:
             classifier = DecisionTreeClassifier(random_state=42)
             cv = ShuffleSplit(n_splits=k, test_size=0.2, random_state=42)
 
@@ -231,8 +229,8 @@ class Section1:
        Make sure the train test splits are the same for both models when performing 
        cross-validation. (Hint: use the same cross-validator instance for both models.)
        Which model has the highest accuracy on average? 
-       Which model has the lowest variance on average? Which model is faster 
-       to train? (compare results of part D and part F)
+       Which model has the lowest variance on average?
+       Which model is faster to train? (compare results of part D and part F)
 
        Make sure your answers are calculated and not copy/pasted. Otherwise, the automatic grading 
        will generate the wrong answers. 
@@ -247,8 +245,16 @@ class Section1:
     ) -> dict[str, Any]:
         """ """
 
-        answer = {}
+        # Random forest classifier with default parameters (except for random state for reproducability)
+        classifier_RF = RandomForestClassifier(random_state=42)
+        classifier_DT = DecisionTreeClassifier(random_state=42)
 
+        # Initialize the ShuffleSplit cross-validator with 5 splits, 20% test size, and a fixed random state for reproducibility
+        cv = ShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
+
+        scores_RF = cross_validate(estimator=classifier_RF, X=X, y=y, cv=cv)
+        scores_DT = cross_validate(estimator=classifier_DT, X=X, y=y, cv=cv)
+        print(scores_RF)
         # Enter your code, construct the `answer` dictionary, and return it.
 
         """
@@ -262,7 +268,39 @@ class Section1:
             "model_lowest_variance" (float)
             "model_fastest" (float)
         """
+        answer = {}
+        answer["clf_RF"] = classifier_RF
+        answer["clf_DT"] = classifier_DT
+        answer["cv"] = cv
+        
+        answer["scores_RF"] = {}
+        mean_fit_time_RF = np.mean(scores_RF['fit_time'])
+        answer["scores_RF"]["mean_fit_time"] = mean_fit_time_RF
+        answer["scores_RF"]["std_fit_time"] =  np.std(scores_RF['fit_time'])
+        
+        mean_accuracy_RF = np.mean(scores_RF['test_score'])
+        answer["scores_RF"]["mean_accuracy"] = mean_accuracy_RF
+        
+        std_accuracy_RF = np.std(scores_RF['test_score'])
+        answer["scores_RF"]["std_accuracy"] = std_accuracy_RF
+        
+        answer["scores_DT"] = {}
+        mean_fit_time_DT = np.mean(scores_DT['fit_time'])
+        answer["scores_DT"]["mean_fit_time"] = mean_fit_time_DT
+        answer["scores_DT"]["std_fit_time"] =  np.std(scores_DT['fit_time'])
+        
+        mean_accuracy_DT = np.mean(scores_DT['test_score'])
+        answer["scores_DT"]["mean_accuracy"] = mean_accuracy_DT
+        
+        std_accuracy_DT = np.std(scores_DT['test_score'])
+        answer["scores_DT"]["std_accuracy"] = std_accuracy_DT
 
+        answer["model_highest_accuracy"] = "random-forest" if mean_accuracy_RF > mean_accuracy_DT else "decision-tree" 
+        # TODO: Revisit this for a sanity check
+        answer["model_lowest_variance"] = "random-forest" if std_accuracy_RF < std_accuracy_DT else "decision-tree" 
+        answer["model_fastest"] = "random-forest" if mean_fit_time_RF > mean_fit_time_DT else "decision-tree" 
+
+        print("Part F Answer:", answer)
         return answer
 
     # ----------------------------------------------------------------------
