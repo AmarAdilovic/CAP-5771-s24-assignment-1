@@ -126,12 +126,25 @@ class Section1:
     ):
         # Enter your code and fill the `answer` dictionary
 
+        # Decision tree classifier
+        classifier = DecisionTreeClassifier(random_state=42)
+        # k-fold cross validation with 5 splits
+        # shuffle set to True as random_state is being specified
+        cv = KFold(n_splits=5, shuffle=True, random_state=42)
+
+        cv_scores = cross_validate(estimator=classifier, X=X, y=y, cv=cv)
+        
         answer = {}
-        answer["clf"] = None  # the estimator (classifier instance)
-        answer["cv"] = None  # the cross validator instance
+        answer["clf"] = classifier  # the estimator (classifier instance)
+        answer["cv"] = cv  # the cross validator instance
         # the dictionary with the scores  (a dictionary with
         # keys: 'mean_fit_time', 'std_fit_time', 'mean_accuracy', 'std_accuracy'.
-        answer["scores"] = None
+        answer["scores"] = {}
+        answer["scores"]["mean_fit_time"] = np.mean(cv_scores['fit_time'])
+        answer["scores"]["std_fit_time"] =  np.std(cv_scores['fit_time'])
+        answer["scores"]["mean_accuracy"] = np.mean(cv_scores['test_score'])
+        answer["scores"]["std_accuracy"] = np.std(cv_scores['test_score'])
+        print("Part C Answer:", answer)
         return answer
 
     # ---------------------------------------------------------
@@ -148,12 +161,27 @@ class Section1:
         # Enter your code and fill the `answer` dictionary
 
         # Answer: same structure as partC, except for the key 'explain_kfold_vs_shuffle_split'
+        # Decision tree classifier
+        classifier = DecisionTreeClassifier(random_state=42)
+        # Initialize the ShuffleSplit cross-validator with 5 splits, 20% test size, and a fixed random state for reproducibility
+        cv = ShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
 
+        cv_scores = cross_validate(estimator=classifier, X=X, y=y, cv=cv)
+        
         answer = {}
-        answer["clf"] = None
-        answer["cv"] = None
-        answer["scores"] = None
-        answer["explain_kfold_vs_shuffle_split"] = None
+        answer["clf"] = classifier  # the estimator (classifier instance)
+        answer["cv"] = cv  # the cross validator instance
+        # the dictionary with the scores  (a dictionary with
+        # keys: 'mean_fit_time', 'std_fit_time', 'mean_accuracy', 'std_accuracy'.
+        answer["scores"] = {}
+        answer["scores"]["mean_fit_time"] = np.mean(cv_scores['fit_time'])
+        answer["scores"]["std_fit_time"] =  np.std(cv_scores['fit_time'])
+        answer["scores"]["mean_accuracy"] = np.mean(cv_scores['test_score'])
+        answer["scores"]["std_accuracy"] = np.std(cv_scores['test_score'])
+
+        answer["explain_kfold_vs_shuffle_split"] = "Shuffle-Split offers more flexibility and can be more efficient for large datasets, but it may introduce more variance in the performance estimates due to the random permutations. While k-fold cross-validation provides a more stable and thorough assessment at the cost of computational efficiency, it is particularly beneficial for smaller datasets or when every data point's utilization is crucial. Both seem to perform relatively similarly on the tested data set."
+        print("Part D Answer:", answer)
+
         return answer
 
     # ----------------------------------------------------------------------
@@ -173,9 +201,28 @@ class Section1:
         # Therefore, `answer[k]` is a dictionary with keys: 'scores', 'cv', 'clf`
 
         answer = {}
+        LIST_OF_K = [2, 5, 8, 16]
+        EASY_K = [1, 2]
+        for k in LIST_OF_K:
+            classifier = DecisionTreeClassifier(random_state=42)
+            cv = ShuffleSplit(n_splits=k, test_size=0.2, random_state=42)
+
+            cv_scores = cross_validate(estimator=classifier, X=X, y=y, cv=cv)
+            
+            answer[k] = {}
+            answer[k]["clf"] = classifier  # the estimator (classifier instance)
+            answer[k]["cv"] = cv  # the cross validator instance
+            # the dictionary with the scores  (a dictionary with
+            # keys: 'mean_fit_time', 'std_fit_time', 'mean_accuracy', 'std_accuracy'.
+            answer[k]["scores"] = {}
+            answer[k]["scores"]["mean_fit_time"] = np.mean(cv_scores['fit_time'])
+            answer[k]["scores"]["std_fit_time"] =  np.std(cv_scores['fit_time'])
+            answer[k]["scores"]["mean_accuracy"] = np.mean(cv_scores['test_score'])
+            answer[k]["scores"]["std_accuracy"] = np.std(cv_scores['test_score'])
+
 
         # Enter your code, construct the `answer` dictionary, and return it.
-
+        print("Part E Answer:", answer)
         return answer
 
     # ----------------------------------------------------------------------
