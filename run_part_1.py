@@ -173,10 +173,10 @@ if __name__ == "__main__":
     # X and Y are Mnist datasets
     answer1A = part_A(part1)
     answer1B, X, y , Xtest, ytest = part_B(part1) ## change made this line
-    # answer1C = part_C(part1, X, y)
-    # answer1D = part_D(part1, X, y)
-    # answer1E = part_E(part1, X, y)
-    # answer1F = part_F(part1, X, y)
+    answer1C = part_C(part1, X, y)
+    answer1D = part_D(part1, X, y)
+    answer1E = part_E(part1, X, y)
+    answer1F = part_F(part1, X, y)
 
     # clf,  #: Type[BaseEstimator],  # Estimator class instance
     # cv,  #: Type[BaseCrossValidator],  # Cross Validator class instsance
@@ -185,10 +185,10 @@ if __name__ == "__main__":
     answer = {}
     answer["1A"] = answer1A
     answer["1B"] = answer1B
-    # answer["1C"] = answer1C
-    # answer["1D"] = answer1D
-    # answer["1E"] = answer1E
-    # answer["1F"] = answer1F
+    answer["1C"] = answer1C
+    answer["1D"] = answer1D
+    answer["1E"] = answer1E
+    answer["1F"] = answer1F
     answer["1G"] = answer1G
 
     u.save_dict("section1.pkl", answer)
