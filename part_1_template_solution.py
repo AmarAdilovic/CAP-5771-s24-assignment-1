@@ -15,7 +15,7 @@ from sklearn.model_selection import (
 )
 
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import GridSearchCV
 
 from typing import Any
@@ -254,7 +254,7 @@ class Section1:
 
         scores_RF = cross_validate(estimator=classifier_RF, X=X, y=y, cv=cv)
         scores_DT = cross_validate(estimator=classifier_DT, X=X, y=y, cv=cv)
-        print(scores_RF)
+
         # Enter your code, construct the `answer` dictionary, and return it.
 
         """
@@ -296,7 +296,6 @@ class Section1:
         answer["scores_DT"]["std_accuracy"] = std_accuracy_DT
 
         answer["model_highest_accuracy"] = "random-forest" if mean_accuracy_RF > mean_accuracy_DT else "decision-tree" 
-        # TODO: Revisit this for a sanity check
         answer["model_lowest_variance"] = "random-forest" if std_accuracy_RF < std_accuracy_DT else "decision-tree" 
         answer["model_fastest"] = "random-forest" if mean_fit_time_RF > mean_fit_time_DT else "decision-tree" 
 
@@ -356,7 +355,61 @@ class Section1:
          5) n_estimators
         """
 
-        answer = {}
+        # from sklearn.metrics import confusion_matrix
+        # from sklearn.model_selection import GridSearchCV
+        # Random forest classifier with default parameters (except for random state for reproducability)
+        # classifier = RandomForestClassifier(random_state=42, criterion=, max_depth=, min_samples_split=, min_samples_leaf=, max_features=)
+        classifier = RandomForestClassifier(random_state=42)
+
+        # Fit the original classifier on the training data
+        classifier.fit(X, y)
+        print('original classifier has been fit')
+
+        y_train_pred_orig = classifier.predict(X)
+        y_test_pred_orig = classifier.predict(Xtest)
+
+        confusion_matrix_train_orig = confusion_matrix(y, y_train_pred_orig)
+        confusion_matrix_test_orig = confusion_matrix(ytest, y_test_pred_orig)
+
+        accuracy_orig_full_training = accuracy_score(y, y_train_pred_orig)
+        accuracy_orig_full_testing = accuracy_score(ytest, y_test_pred_orig)
+
+
+        # Define a range of hyperparameters for tuning
+        param_grid = {
+            'criterion': ['gini', 'entropy'],
+            'max_depth': [None, 10, 15],
+            'min_samples_split': [2, 5, 8],
+            'min_samples_leaf': [1, 2, 4],
+            'max_features': ['sqrt', 'log2']
+        }
+
+        # Define a ShuffleSplit cross-validator
+        cv = ShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
+        # Used only for the answer dict
+        cv_scores = cross_validate(estimator=classifier, X=X, y=y, cv=cv)
+        # print('cv scores have been calculated')
+        grid_search = GridSearchCV(estimator=classifier, param_grid=param_grid, cv=cv, scoring='accuracy', verbose=1)
+        # print(grid_search)
+
+        # grid_search.fit(X, y)
+        # print(grid_search.best_params_)
+        # print(grid_search.best_estimator_)
+        # Grid search returns:
+        # {'criterion': 'gini', 'max_depth': None, 'max_features': 'sqrt', 'min_samples_leaf': 1, 'min_samples_split': 2}
+    
+        # # Train the Random Forest classifier with the best parameters on the entire training set
+        optimized_classifier = RandomForestClassifier(random_state=42, criterion='gini', max_depth=None, max_features='sqrt', min_samples_leaf=1, min_samples_split=2)
+        optimized_classifier.fit(X, y)
+        print('optimized classifier has been fit')
+        y_train_pred_best = optimized_classifier.predict(X)
+        y_test_pred_best = optimized_classifier.predict(Xtest)
+
+        confusion_matrix_train_best = confusion_matrix(y, y_train_pred_best)
+        confusion_matrix_test_best = confusion_matrix(ytest, y_test_pred_best)
+
+        accuracy_best_full_training = optimized_classifier.score(X, y)
+        accuracy_best_full_testing = accuracy_score(ytest, y_train_pred_best)
 
         # Enter your code, construct the `answer` dictionary, and return it.
 
@@ -388,4 +441,20 @@ class Section1:
                
         """
 
+        answer = {
+            "clf": classifier,
+            "default_parameters": classifier.get_params(),
+            "best_estimator": optimized_classifier,
+            "grid_search": grid_search,
+            "mean_accuracy_cv": np.mean(cv_scores['test_score']),
+            "confusion_matrix_train_orig": confusion_matrix_train_orig,
+            "confusion_matrix_train_best": confusion_matrix_train_best,
+            "confusion_matrix_test_orig": confusion_matrix_test_orig,
+            "confusion_matrix_test_best": confusion_matrix_test_best,
+            "accuracy_orig_full_training": accuracy_orig_full_training,
+            "accuracy_best_full_training": accuracy_best_full_training,
+            "accuracy_orig_full_testing": accuracy_orig_full_testing,
+            "accuracy_best_full_testing": accuracy_best_full_testing
+        }
+        print(answer)
         return answer

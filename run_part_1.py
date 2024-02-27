@@ -151,16 +151,16 @@ if __name__ == "__main__":
 
     ################################################
     # In real code, read MNIST files and define Xtrain and xtest appropriately
-    X = np.random.rand(120, 120)  # 100 samples, 100 features
+    # X = np.random.rand(120, 120)  # 100 samples, 100 features
     # Fill labels with 0 and 1 (mimic 7 and 9s)
-    y = (X[:, :5].sum(axis=1) > 2.5).astype(int)
-    n_train = 100
-    Xtrain = X[0:n_train, :]
-    Xtest = X[n_train:, :]
-    ytrain = y[0:n_train]
-    ytest = y[n_train:]
-    X = Xtrain
-    y = ytrain
+    # y = (X[:, :5].sum(axis=1) > 2.5).astype(int)
+    # n_train = 100
+    # Xtrain = X[0:n_train, :]
+    # Xtest = X[n_train:, :]
+    # ytrain = y[0:n_train]
+    # ytest = y[n_train:]
+    # X = Xtrain
+    # y = ytrain
     ##############################################
 
     # Attention: the seed should never be changed. If it is, automatic grading
@@ -172,11 +172,11 @@ if __name__ == "__main__":
 
     # X and Y are Mnist datasets
     answer1A = part_A(part1)
-    answer1B = part_B(part1) ## change made this line
-    answer1C = part_C(part1, X, y)
-    answer1D = part_D(part1, X, y)
-    answer1E = part_E(part1, X, y)
-    answer1F = part_F(part1, X, y)
+    answer1B, X, y , Xtest, ytest = part_B(part1) ## change made this line
+    # answer1C = part_C(part1, X, y)
+    # answer1D = part_D(part1, X, y)
+    # answer1E = part_E(part1, X, y)
+    # answer1F = part_F(part1, X, y)
 
     # clf,  #: Type[BaseEstimator],  # Estimator class instance
     # cv,  #: Type[BaseCrossValidator],  # Cross Validator class instsance
@@ -185,10 +185,10 @@ if __name__ == "__main__":
     answer = {}
     answer["1A"] = answer1A
     answer["1B"] = answer1B
-    answer["1C"] = answer1C
-    answer["1D"] = answer1D
-    answer["1E"] = answer1E
-    answer["1F"] = answer1F
+    # answer["1C"] = answer1C
+    # answer["1D"] = answer1D
+    # answer["1E"] = answer1E
+    # answer["1F"] = answer1F
     answer["1G"] = answer1G
 
     u.save_dict("section1.pkl", answer)

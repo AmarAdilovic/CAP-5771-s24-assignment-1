@@ -4,6 +4,20 @@
 import numpy as np
 from numpy.typing import NDArray
 from typing import Any
+import utils as u
+import new_utils as nu
+
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import (
+    ShuffleSplit,
+    cross_validate,
+    KFold,
+)
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.model_selection import GridSearchCV
 
 # ======================================================================
 
@@ -51,7 +65,22 @@ class Section2:
         NDArray[np.floating],
         NDArray[np.int32],
     ]:
-        answer = {}
+        X, y, Xtest, ytest = u.prepare_data()
+        Xtrain, ytrain = u.filter_out_7_9s(X, y)
+        Xtest, ytest = u.filter_out_7_9s(Xtest, ytest)
+        Xtrain = nu.scale_data(Xtrain)
+        Xtest = nu.scale_data(Xtest)
+        # According to filter_out_7_9s, y is the labels
+        # Also check that the labels are integers
+        ytrain = nu.enforce_matrix_type(y, np.int32, int)
+        ytest = nu.enforce_matrix_type(ytest, np.int32, int)
+
+        unique_classes_y_train, counts_y_train = np.unique(ytrain, return_counts=True)
+        unique_classes_y_test, counts_y_test = np.unique(ytest, return_counts=True)
+
+        unique_classes_x_train, counts_x_train = np.unique(Xtrain, return_counts=True)
+        unique_classes_x_test, counts_x_test = np.unique(Xtest, return_counts=True)
+
         # Enter your code and fill the `answer`` dictionary
 
         # `answer` is a dictionary with the following keys:
@@ -69,6 +98,21 @@ class Section2:
         # return values:
         # Xtrain, ytrain, Xtest, ytest: the data used to fill the `answer`` dictionary
 
+        answer = {}
+
+        # Enter your code and fill the `answer` dictionary
+
+        answer["nb_classes_train"] = len(unique_classes_y_train) + len(unique_classes_x_train)
+        answer["nb_classes_test"] = len(unique_classes_y_test) + len(unique_classes_x_test)
+        answer["class_count_train"] = counts_y_train
+        answer["class_count_test"] = counts_y_test
+        answer["length_Xtrain"] = len(Xtrain)  # Number of samples
+        answer["length_Xtest"] = len(Xtest)
+        answer["length_ytrain"] = len(ytrain)
+        answer["length_ytest"] = len(ytest)
+        answer["max_Xtrain"] = np.max(Xtrain)
+        answer["max_Xtest"] = np.max(Xtest)
+        print("Part A Answer:", answer)
         Xtrain = Xtest = np.zeros([1, 1], dtype="float")
         ytrain = ytest = np.zeros([1], dtype="int")
 
@@ -118,5 +162,83 @@ class Section2:
             - "class_count_test": number of elements in each class in
                                the training set (a list, not a numpy array)
         """
+        answer = {}
+        answer["partC"] = {}
+        answer["partD"] = {}
+        answer["partF"] = {}
+        ntest = { 1000: 200, 5000: 1000, 10000: 2000 }
+        for k in [1000, 5000, 10000]:
+            ntrain = k
+            Xtrain = X[0:ntrain, :]
+            ytrain = y[0:ntrain]
+            Xtest = X[ntrain:ntrain+ntest[k]]
+            ytest = y[ntrain:ntrain+ntest[k]]
 
+            classifier = DecisionTreeClassifier(random_state=42)
+            cv = KFold(n_splits=5, shuffle=True, random_state=42)
+            cv_scores = cross_validate(estimator=classifier, X=Xtrain, y=ytrain, cv=cv)
+            
+            answer["partC"]["clf"] = classifier 
+            answer["partC"]["cv"] = cv
+            answer["partC"]["scores"] = {}
+            answer["partC"]["scores"]["mean_fit_time"] = np.mean(cv_scores['fit_time'])
+            answer["partC"]["scores"]["std_fit_time"] =  np.std(cv_scores['fit_time'])
+            answer["partC"]["scores"]["mean_accuracy"] = np.mean(cv_scores['test_score'])
+            answer["partC"]["scores"]["std_accuracy"] = np.std(cv_scores['test_score'])
+
+
+            cv = ShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
+            cv_scores = cross_validate(estimator=classifier, X=Xtrain, y=ytrain, cv=cv)
+            
+            answer["partD"]["clf"] = classifier
+            answer["partD"]["cv"] = cv 
+            answer["partD"]["scores"] = {}
+            answer["partD"]["scores"]["mean_fit_time"] = np.mean(cv_scores['fit_time'])
+            answer["partD"]["scores"]["std_fit_time"] =  np.std(cv_scores['fit_time'])
+            answer["partD"]["scores"]["mean_accuracy"] = np.mean(cv_scores['test_score'])
+            answer["partD"]["scores"]["std_accuracy"] = np.std(cv_scores['test_score'])
+            answer["partD"]["explain_kfold_vs_shuffle_split"] = "Shuffle-Split offers more flexibility and can be more efficient for large datasets, but it may introduce more variance in the performance estimates due to the random permutations. While k-fold cross-validation provides a more stable and thorough assessment at the cost of computational efficiency, it is particularly beneficial for smaller datasets or when every data point's utilization is crucial. Both seem to perform relatively similarly on the tested data set."
+
+            classifier_RF = RandomForestClassifier(random_state=42)
+            classifier_DT = DecisionTreeClassifier(random_state=42)
+
+            scores_RF = cross_validate(estimator=classifier_RF, X=X, y=y, cv=cv)
+            scores_DT = cross_validate(estimator=classifier_DT, X=X, y=y, cv=cv)
+
+            answer["partF"]["clf_RF"] = classifier_RF
+            answer["partF"]["clf_DT"] = classifier_DT
+            answer["partF"]["cv"] = cv
+            
+            answer["partF"]["scores_RF"] = {}
+            mean_fit_time_RF = np.mean(scores_RF['fit_time'])
+            answer["partF"]["scores_RF"]["mean_fit_time"] = mean_fit_time_RF
+            answer["partF"]["scores_RF"]["std_fit_time"] =  np.std(scores_RF['fit_time'])
+            
+            mean_accuracy_RF = np.mean(scores_RF['test_score'])
+            answer["partF"]["scores_RF"]["mean_accuracy"] = mean_accuracy_RF
+            
+            std_accuracy_RF = np.std(scores_RF['test_score'])
+            answer["partF"]["scores_RF"]["std_accuracy"] = std_accuracy_RF
+            
+            answer["partF"]["scores_DT"] = {}
+            mean_fit_time_DT = np.mean(scores_DT['fit_time'])
+            answer["partF"]["scores_DT"]["mean_fit_time"] = mean_fit_time_DT
+            answer["partF"]["scores_DT"]["std_fit_time"] =  np.std(scores_DT['fit_time'])
+            
+            mean_accuracy_DT = np.mean(scores_DT['test_score'])
+            answer["partF"]["scores_DT"]["mean_accuracy"] = mean_accuracy_DT
+            
+            std_accuracy_DT = np.std(scores_DT['test_score'])
+            answer["partF"]["scores_DT"]["std_accuracy"] = std_accuracy_DT
+
+            answer["partF"]["model_highest_accuracy"] = "random-forest" if mean_accuracy_RF > mean_accuracy_DT else "decision-tree" 
+            answer["partF"]["model_lowest_variance"] = "random-forest" if std_accuracy_RF < std_accuracy_DT else "decision-tree" 
+            answer["partF"]["model_fastest"] = "random-forest" if mean_fit_time_RF > mean_fit_time_DT else "decision-tree" 
+
+            answer["ntrain"] = ntrain
+            answer["ntest"] = ntest[k]
+            answer["class_count_train"] = np.unique(ytrain)
+            answer["class_count_test"] = np.unique(Xtrain)
+
+        print("Part B answer: ", answer)
         return answer
